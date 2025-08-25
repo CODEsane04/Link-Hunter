@@ -4,7 +4,8 @@
     "description" : "visual Product Search",
     "permissions": [
         "activeTab",
-        "contextMenus"
+        "contextMenus",
+        "storage"
     ],
     "background": {
         "service_worker": "service-worker.js"

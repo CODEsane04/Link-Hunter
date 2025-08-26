@@ -54,7 +54,7 @@ async function getlinks(img_url) {
             
         }
         
-        
+
     } catch (e) {
         console.log("failed to fetch links : ", e);
     }

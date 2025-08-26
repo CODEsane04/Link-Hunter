@@ -1,13 +1,21 @@
-document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener('DOMContentLoaded', () => {
     const url_space = document.getElementById('img-url');
-    
-    const data = await chrome.storage.local.get('capturedImageUrl');
 
-    if (data.capturedImageUrl){
-        url_space.textContent = data.capturedImageUrl;
+    async function diplayUrl(getUrl) {
+        let url = await getUrl();
+        if (url){
+        url_space.textContent = url;
+        }
+        else {
+            url_space.textContent = "No image URL found.";
+        }
     }
-    else {
-        url_space.textContent = "No image URL found.";
+
+    async function getUrl() {
+        let result = await chrome.storage.local.get('capturedImageUrl');
+        return result.capturedImageUrl;
     }
+    
+    diplayUrl(getUrl);
 
 })

@@ -1,6 +1,5 @@
 const express = require('express');
 const { spawn } = require('child_process');
-const { log } = require('console');
 const router = express.Router();
 
 //define the POST endpoint
@@ -18,12 +17,14 @@ router.post('/get-url', (req, res) => {
     // Spawn a Python child process
     // The first argument is 'python' or 'python3'
     // The second is an array containing the script path and any arguments
-    const Python_process = spawn('python3', ['../python_scripts/find_links.py', imageUrl]);
+    const pythonExecutablePath = '/usr/bin/python3';
+    const Python_process = spawn(pythonExecutablePath, ['./python_scripts/find_links.py', imageUrl]);
 
     let result_data = '';
     let error_data = '';
 
     // Listen for data coming from the Python script's standard output
+    //data arrives in chunks, that is why we keep adding the chunks to the result_data
     Python_process.stdout.on('data', (data) => {
         result_data += data.toString();
     });
@@ -33,7 +34,8 @@ router.post('/get-url', (req, res) => {
         error_data += error.toString();
     });
 
-    //when the python script finishes
+    //when the python script finishes, and all the data has been gathered,
+    //we can then convert it into a JSON format
     Python_process.on('close', (code) => {
         if (code !== 0 || error_data) {
             console.log(`Python script error : ${error_data}`);
@@ -44,10 +46,14 @@ router.post('/get-url', (req, res) => {
             //parse the json script recieved from he python
             const results = JSON.parse(result_data);
             //send parse results back to extension
-            
-        } catch (error) {
-            
+            res.json(results);
+
+        } catch (e) {
+            console.log("error parsing JSON from python script : ", e);
+            return res.status(500).json({ error: 'Failed to parse results from script.' }); 
         }
-    })
+    });
     
-})
+});
+
+module.exports = router;

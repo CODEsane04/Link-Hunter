@@ -33,6 +33,8 @@ async function getlinks(img_url) {
         
         //response is a Response Object, you need to unpack this object
         //which is done by response.json() it unpacks & parses
+
+        //we send a POST request to the backend with the image url in the body
         const response = await fetch(backendUrl, {
             method : 'POST',
             headers : {
@@ -51,10 +53,8 @@ async function getlinks(img_url) {
             chrome.storage.local.set({fetchedLinks : data.tutorials}, () => {
                 console.log("stored the fetched links successfully in the local storage");
             })
-            
         }
         
-
     } catch (e) {
         console.log("failed to fetch links : ", e);
     }

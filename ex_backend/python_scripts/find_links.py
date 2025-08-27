@@ -15,9 +15,9 @@ def main() :
 
         mock_results = {
             "tutorials": [
-                {"title": "How to Draw Realistic Portraits", "url": "https://youtube.com/watch?v=123"},
-                {"title": "Beginner's Guide to Digital Painting", "url": "https://youtube.com/watch?v=456"},
-                {"title": "Advanced Shading Techniques", "url": "https://youtube.com/watch?v=789"}
+                {"title": "How to Draw Realistic Portraits", "url": "https://youtube.com/watch?v=123", "views": "1.2M"},
+                {"title": "Beginner's Guide to Digital Painting", "url": "https://youtube.com/watch?v=456", "views": "4.2M"},
+                {"title": "Advanced Shading Techniques", "url": "https://youtube.com/watch?v=789", "views": "225k"}
             ]
         }
 

@@ -46,6 +46,7 @@ router.post('/get-url', (req, res) => {
             //parse the json script recieved from he python
             const results = JSON.parse(result_data);
             //send parse results back to extension
+            console.log("sending the results back to the extension : ", results);
             res.json(results);
 
         } catch (e) {

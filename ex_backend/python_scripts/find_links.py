@@ -45,8 +45,37 @@ def get_image_caption(image_url) :
         # If anything goes wrong (e.g., model download fails, bad URL), return None
         print(f"Error generating caption: {e}", file=sys.stderr)
         return None
+
+def format_view_count(views):
+    """
+    Converts an integer view count into a shortened format (e.g., "1.2M" or "12k").
+    """
+    if not isinstance(views, int):
+        return "N/A"
+    try:
+        if views >= 1_000_000:
+            return f"{views / 1_000_000:.1f}M"
+        elif views >= 1_000:
+            return f"{views // 1000}k"
+        else:
+            return str(views)
+    except (ValueError, TypeError):
+        return "N/A"
     
-def search_youtube_links(keyword, querry, limit=4) :
+def get_raw_view_count(view_text):
+    """
+    Extracts the raw integer value from a view count string.
+    """
+    if not view_text or 'views' not in view_text.lower():
+        return 0
+    try:
+        num_str = ''.join(filter(str.isdigit, view_text))
+        return int(num_str) if num_str else 0
+    except (ValueError, TypeError):
+        return 0
+        
+    
+def search_youtube_links(keyword, querry, limit=10) :
     """
     Takes a search query, searches YouTube, and returns a list of
     tutorial videos with their titles and URLs.
@@ -56,18 +85,38 @@ def search_youtube_links(keyword, querry, limit=4) :
         search_querry = f"{keyword} tutorial for beginners"
 
         #perform the search & limit the number of results
-        videos_search = VideosSearch(search_querry, limit=limit)
+        videos_search = VideosSearch(search_querry, limit=30)
         results = videos_search.result()['result']
 
         #format the results into desired structure
         tutorials = []
         for video in results :
+
+            view_count_text = video.get('viewCount', {}).get('text', 'N/A')
+            raw_views = get_raw_view_count(view_count_text)
+
             tutorials.append({
                 "title" : video['title'],
                 "url" : video['link'],
                 "product_name" : keyword,
+                "raw_views" : raw_views,
             })
-        return tutorials
+        tutorials = sorted(tutorials, key=lambda x: x['raw_views'], reverse=True)
+
+        tutorials = tutorials[:limit]
+        final_tutorials = []
+
+        for items in tutorials :
+            formatted_views = format_view_count(items['raw_views'])
+
+            final_tutorials.append({
+                "title" : items['title'],
+                "url" : items['url'],
+                "product_name" : items['product_name'],
+                "formatted_views" : formatted_views,
+            })
+            
+        return final_tutorials
     except Exception as e :
         print(f"Error searching Youtube: {e}", file=sys.stderr)
         return []

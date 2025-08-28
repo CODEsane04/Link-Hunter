@@ -26,7 +26,7 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
 
 async function getlinks(img_url) {
 
-    const backendUrl = 'https://link-hunter-backend.onrender.com/api/get-url';
+    const backendUrl = 'https://localhost:3000/api/get-url';
     console.log("sending image url to the backend : ", img_url);
     
     try {

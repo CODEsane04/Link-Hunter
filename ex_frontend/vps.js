@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     const listOfLinks = document.getElementById('link-list');
+    const productName = document.getElementById('prod-name');
 
     let link_arr = [];
     
@@ -24,11 +25,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const view_count = document.createElement('span');
                 view_count.classList.add('views');
-                view_count.textContent = link.views;
+                view_count.textContent = "2.5M";
 
                 listOfLinks.appendChild(item);
                 listOfLinks.appendChild(view_count);
             });
+
+            productName.textContent = link_arr[0].product_name;
         }
         else {
             console.log("no links found in the local storage");
@@ -38,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
             messageElement.textContent = "No tutorials found for the last image.";
             messageElement.style.gridColumn = "1 / -1"; // Make message span both columns
             messageElement.style.textAlign = "center";
-            linkListContainer.appendChild(messageElement);
+            listOfLinks.appendChild(messageElement);
         };
     };
     

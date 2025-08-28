@@ -34,13 +34,9 @@
         color: #D6E5E3;
         margin-bottom: 10px;
     }
-    .product h1 {
+    .product h3 {
         margin-bottom: 3px;
-        
-    }
-    .product p {
         font-style: italic;
-        margin-top: 0px;
     }
     footer {
         margin-top: auto;

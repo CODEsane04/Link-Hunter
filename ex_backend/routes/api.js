@@ -43,6 +43,8 @@ router.post('/get-url', (req, res) => {
         }
 
         try {
+            console.log("image processed successfully by the python script");
+            
             //parse the json script recieved from he python
             const results = JSON.parse(result_data);
             //send parse results back to extension

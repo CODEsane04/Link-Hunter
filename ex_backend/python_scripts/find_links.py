@@ -14,7 +14,7 @@ def extract_product_keyword(caption) :
     stop_words = [
         'a', 'an', 'the', 'in', 'on', 'at', 'of', 'for', 'to',
         'is', 'are', 'was', 'were', 'up', 'down', 'out', 'close', 'and', 'someone',
-        'holding', 'hands', 'their', 'his', 'her', 'they', 'them', 'all', 'none'
+        'holding', 'hands', 'their', 'his', 'her', 'they', 'them', 'all', 'none', 'there'
     ]
 
     words = caption.lower().split()

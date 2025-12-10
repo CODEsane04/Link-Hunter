@@ -1,7 +1,7 @@
 function setupContextMenu() {
     chrome.contextMenus.create({
-        id: "searchWithVPS",
-        title: "Search with VPS",
+        id: "searchWithLH",
+        title: "Search with LH",
         contexts: ["image"]
     });
 };
@@ -11,7 +11,7 @@ chrome.runtime.onInstalled.addListener(() => {
 });
 
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
-    if (info.menuItemId === "searchWithVPS") {
+    if (info.menuItemId === "searchWithLH") {
 
         console.log("Image right-clicked. URL : ", info.srcUrl);
 

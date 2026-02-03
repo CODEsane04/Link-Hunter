@@ -37,11 +37,24 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log("no links found in the local storage");
 
             // If no tutorials are found, display a message
-            const messageElement = document.createElement('p');
-            messageElement.textContent = "No tutorials found for the last image.";
-            messageElement.style.gridColumn = "1 / -1"; // Make message span both columns
-            messageElement.style.textAlign = "center";
-            listOfLinks.appendChild(messageElement);
+            productName.textContent = "No DIY Object Detected";
+            productName.style.color = "#d9534f"; // Red/Warning color
+            
+            listOfLinks.innerHTML = `
+                <div style="text-align: center; padding: 20px; color: #555;">
+                    <div style="font-size: 24px; margin-bottom: 10px;">🤷‍♂️</div>
+                    <p style="margin-bottom: 10px;"><strong>Link Hunter works best on:</strong></p>
+                    <ul style="text-align: left; margin-left: 20px; font-size: 0.9em;">
+                        <li>🧶 Crochet & Knitting</li>
+                        <li>🪵 Woodworking</li>
+                        <li>🖼️ Arts & Crafts</li>
+                        <li>🖨️ 3D Printing</li>
+                    </ul>
+                    <p style="margin-top: 15px; font-size: 0.8em; color: #888;">
+                        Try clicking specifically on the <strong>object</strong> you want to make.
+                    </p>
+                </div>
+            `;
         };
     };
     

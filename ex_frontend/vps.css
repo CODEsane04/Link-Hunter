@@ -72,7 +72,7 @@
     
     /* Specific styling for the eye icon header */
     .list-header.icon {
-        font-size: 18px; /* Makes the eye icon a bit larger */
+        font-size: 12px; /* Makes the eye icon a bit larger */
         justify-self: center; /* Aligns the icon to the right of its column */
         margin-bottom: 0px;
     }

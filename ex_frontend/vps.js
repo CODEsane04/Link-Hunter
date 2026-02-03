@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const view_count = document.createElement('span');
                 view_count.classList.add('views');
-                view_count.textContent = link.formatted_views || "0";
+                view_count.textContent = link.score || "0";
 
                 listOfLinks.appendChild(item);
                 listOfLinks.appendChild(view_count);

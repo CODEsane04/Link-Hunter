@@ -9,7 +9,7 @@ Instead of guessing keywords, Link Hunter uses a Vision-Language Model to analyz
 
 To use Link Hunter on your own machine, follow these simple steps:
 
-1. **Unzip** the `extension.zip` file.
+1. **[Download the extension.zip file here](https://github.com/CODEsane04/Link-Hunter/raw/main/extension.zip)** and unzip it.
 2. **Open Chrome** and navigate to `chrome://extensions` in your address bar.
 3. **Enable "Developer mode"** (toggle in the top right corner).
 4. Click **"Load unpacked"** in the top left menu.

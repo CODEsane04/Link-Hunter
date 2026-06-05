@@ -15,15 +15,19 @@ To use Link Hunter on your own machine, follow these simple steps:
 4. Click **"Load unpacked"** in the top left menu.
 5. **Select the unzipped folder** from step 1.
 
-You're all set! Right-click any DIY image on the web and select "Search with VPS" to see the magic happen.
+You're all set! Right-click any DIY image on the web and select "Search with LH" to see the magic happen.
 
 ## 🧠 Technical Architecture & Features
 
 Link Hunter is built on a polyglot microservice architecture, bridging a lightweight browser extension with a heavy-duty AI processing pipeline. 
 
 * **Polyglot Backend Execution:** The backend utilizes a **Node.js/Express** server that natively spawns a **Python 3** child process. This allows the system to seamlessly handle fast web requests via JavaScript while leveraging Python's superior ecosystem for AI and data scraping tasks.
-* **Vision-Language Model (VLM) Pipeline:** Image analysis is powered by Hugging Face's **Qwen2.5-VL-7B-Instruct** model. To bypass strict anti-bot and hotlinking protections on sites like Pinterest, the backend dynamically fetches and Base64-encodes the target image before transmitting it to the serverless GPU inference API.
+* **Vision-Language Model (VLM) Pipeline:** Image analysis is powered by Hugging Face's **Qwen3.6-35B-A3B** model. To bypass strict anti-bot and hotlinking protections on sites like Pinterest, the backend dynamically fetches and Base64-encodes the target image before transmitting it to the serverless GPU inference API.
 * **Algorithmic Re-Ranking (Freshness Decay):** Standard YouTube search heavily favors older videos simply because they have accumulated more lifetime views. Link Hunter implements a custom **"Freshness Decay" mathematical algorithm** (`Score = Views / 1.2^Years`) that penalizes outdated content, ensuring the top results are a perfect balance of high popularity and modern relevance.
 * **AI Guardrails & Query Expansion:** To optimize token usage and accuracy, the VLM is prompt-engineered to enforce a strict JSON schema. This acts as a guardrail to immediately reject non-DIY images (like memes or landscapes). For valid images, it executes a "Shotgun Strategy," generating both a highly specific query (precision) and a general category query (discovery) to guarantee robust results.
 
 **Tech Stack:** JavaScript, Chrome Manifest V3, Node.js, Express, Python 3, Hugging Face Hub, `Youtube-python`.
+
+**Future Updates**
+1. Decide a fallback architecture (qwen 2.5 failed suddenly in the last version)
+2. Calling the VLM for every req is expensive, use an intermediate model to first check if the image is valid, only then route it to the VLM

@@ -15,7 +15,7 @@ To use Link Hunter on your own machine, follow these simple steps:
 4. Click **"Load unpacked"** in the top left menu.
 5. **Select the unzipped folder** from step 1.
 
-You're all set! Right-click any DIY image on the web and select "Search with VPS" to see the magic happen.
+You're all set! Right-click any DIY image on the web and select "Search with LH" to see the magic happen.
 
 ## 🧠 Technical Architecture & Features
 

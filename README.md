@@ -27,3 +27,7 @@ Link Hunter is built on a polyglot microservice architecture, bridging a lightwe
 * **AI Guardrails & Query Expansion:** To optimize token usage and accuracy, the VLM is prompt-engineered to enforce a strict JSON schema. This acts as a guardrail to immediately reject non-DIY images (like memes or landscapes). For valid images, it executes a "Shotgun Strategy," generating both a highly specific query (precision) and a general category query (discovery) to guarantee robust results.
 
 **Tech Stack:** JavaScript, Chrome Manifest V3, Node.js, Express, Python 3, Hugging Face Hub, `Youtube-python`.
+
+**Future Updates**
+1. Decide a fallback architecture (qwen 2.5 failed suddenly in the last version)
+2. Calling the VLM for every req is expensive, use an intermediate model to first check if the image is valid, only then route it to the VLM

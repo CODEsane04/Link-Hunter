@@ -31,3 +31,4 @@ Link Hunter is built on a polyglot microservice architecture, bridging a lightwe
 **Future Updates**
 1. Decide a fallback architecture (qwen 2.5 failed suddenly in the last version)
 2. Calling the VLM for every req is expensive, use an intermediate model to first check if the image is valid, only then route it to the VLM
+3. How to judge the quality of responses? Add a 2nd layer of Quality check based on semantics. Semantically match the image description with YT video titles, pick top 10 most similar ones.

@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     async function get_links() {
         let result = await chrome.storage.local.get('fetchedLinks');
+        localStorage.removeItem('fetchedLinks')
         return result.fetchedLinks;
     }
 

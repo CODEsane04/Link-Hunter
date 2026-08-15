@@ -37,7 +37,10 @@ Link Hunter operates on a streamlined, AI-first pipeline, bridging a lightweight
 
 * **Prompt Engineering & A/B Testing:** The query generation pipeline was rigorously optimized through structured A/B testing across 4 distinct system prompt variants. Evaluated on a curated subset of our golden dataset, **Prompt V1 (Strict/Concise)** initially led the pack, achieving an **83% Average Retrieval Accuracy** alongside a flawless **100% Routing Accuracy** (correctly distinguishing DIY vs. non-DIY images). **Prompt V3 (Guided Natural)** followed closely with 77% average retrieval accuracy and 100% routing accuracy.
   
-![A/B Testing Retrieval Accuracy](download.png)
+<p align="center">
+  <img src="download.png" width="48%" />
+  <img src="ab_testing_terminal_op.png" width="48%" />
+</p>
 
 * **LLM-as-a-Judge Evaluation Framework:** To ensure production-ready reliability, the pipeline was benchmarked against the complete golden dataset using an automated "LLM-as-a-Judge" architecture. This judge model autonomously graded retrieval quality by strictly matching the top retrieved YouTube video titles against expected rubric descriptions (Precision@5). In this comprehensive full-scale evaluation, **System Prompt V3** demonstrated superior generalization and human-like query formulation, ultimately standing out with a sustained **83% Overall Accuracy**.
 

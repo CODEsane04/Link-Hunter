@@ -39,7 +39,7 @@ Link Hunter operates on a streamlined, AI-first pipeline, bridging a lightweight
   
 <p align="center">
   <img src="download.png" width="48%" />
-  <img src="ab_testing_terminal_op.png" width="48%" />
+  <img src="AB_testing_terminal_op.png" width="48%" />
 </p>
 
 * **LLM-as-a-Judge Evaluation Framework:** To ensure production-ready reliability, the pipeline was benchmarked against the complete golden dataset using an automated "LLM-as-a-Judge" architecture. This judge model autonomously graded retrieval quality by strictly matching the top retrieved YouTube video titles against expected rubric descriptions (Precision@5). In this comprehensive full-scale evaluation, **System Prompt V3** demonstrated superior generalization and human-like query formulation, ultimately standing out with a sustained **83% Overall Accuracy**.

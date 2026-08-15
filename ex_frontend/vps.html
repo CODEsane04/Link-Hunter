@@ -3,44 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>vps</title>
+    <title>Link Hunter</title>
     <link rel="stylesheet" href="vps.css"> 
-     
-     
 </head>
 <body>
 
+    <!-- Untouched Header -->
     <div class="logo" id="logo">
         <img src="https://placehold.co/30x30/10B981/FFFFFF?text=LH" alt="">
         <h3>LINK HUNTER</h3>
     </div>
 
+    <!-- Revamped Product Info -->
     <div class="product" id="product">
-        <h2>Product Description</h2>
-        <h3 class="prod-name" id="prod-name">Product name</h3>
+        <h2 class="section-title">Search Query</h2>
+        <h3 class="prod-name" id="prod-name">Loading...</h3>
     </div>
 
-    <div class="link-list" id="link-list">
-        <!-- Header Row -->
-        <div class="list-header">Link</div>
-        <div class="list-header icon">score</div>
-
-        <!-- Data Row 1 
-        <a href="#" title="https://example.com/video/awesome-tutorial-on-modern-css-techniques">https://example.com/video/awesome-tutorial-on-modern-css-techniques</a>
-        <span class="views">125k</span> -->
-
+    <!-- Revamped List Container -->
+    <div class="link-list-container">
+        <div class="list-header-row">
+            <span class="header-title">Tutorials</span>
+            <span class="header-score">Score</span>
+        </div>
         
+        <div class="link-list" id="link-list">
+            <!-- Dynamic data gets appended here by JS -->
+        </div>
     </div>
 
     <footer>
-        <p>© 2026 link hunter. All rights reserved.</p>
+        <p>© 2026 Link Hunter. All rights reserved.</p>
     </footer>
 
-    
-
-    <ul id="link-lists" class="link-lists">
-
-    </ul>
     <script src="./vps.js"></script>
 </body>
 </html>

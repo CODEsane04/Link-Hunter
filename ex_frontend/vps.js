@@ -26,30 +26,32 @@ document.addEventListener('DOMContentLoaded', () => {
         const link_arr = data.final_list;
         
         if (link_arr && link_arr.length > 0) {
-            console.log("Links retrieved from the local storage : ", link_arr);
+            console.log("Links retrieved from local storage: ", link_arr);
 
             productName.textContent = data.search_query;
+            listOfLinks.innerHTML = ""; // Clear loader if any
 
             link_arr.forEach(link => {
-                const container = document.createElement('div');
-                container.style.marginBottom = "10px";
-
+                // Creating a fully clickable row container (a tag)
                 const item = document.createElement('a');
                 item.href = link.link; 
                 item.title = link.title;
-                item.textContent = link.title;
                 item.target = "_blank";
+                item.className = "link-item";
 
+                // Title Element
+                const titleSpan = document.createElement('span');
+                titleSpan.className = "link-title";
+                titleSpan.textContent = link.title;
+
+                // Views/Score Element (Aligns to the right)
                 const view_count = document.createElement('span');
-                view_count.classList.add('views');
-                view_count.style.marginLeft = "10px";
-                view_count.style.fontSize = "0.85em";
-                view_count.style.color = "#555";
-                view_count.textContent = `👁️ ${link.views || "0"}`;
+                view_count.className = 'views';
+                view_count.textContent = link.views || "0";
 
-                container.appendChild(item);
-                container.appendChild(view_count);
-                listOfLinks.appendChild(container);
+                item.appendChild(titleSpan);
+                item.appendChild(view_count);
+                listOfLinks.appendChild(item);
             });
         }
         else {
@@ -60,22 +62,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function show_invalid_state(reason) {
         productName.textContent = "No DIY Object Detected";
-        productName.style.color = "#d9534f"; 
+        productName.style.color = "var(--danger-color)"; 
         
         listOfLinks.innerHTML = `
-            <div style="text-align: center; padding: 20px; color: #555;">
-                <div style="font-size: 24px; margin-bottom: 10px;">🤷‍♂️</div>
-                <p style="margin-bottom: 10px; color: #d9534f;"><strong>${reason}</strong></p>
-                <p style="margin-bottom: 10px;"><strong>Link Hunter works best on:</strong></p>
-                <ul style="text-align: left; margin-left: 20px; font-size: 0.9em;">
-                    <li>🧶 Crochet & Knitting</li>
-                    <li>🪵 Woodworking</li>
-                    <li>🖼️ Arts & Crafts</li>
-                    <li>🖨️ 3D Printing</li>
-                </ul>
-                <p style="margin-top: 15px; font-size: 0.8em; color: #888;">
-                    Try clicking specifically on the <strong>object</strong> you want to make.
-                </p>
+            <div class="invalid-state">
+                <div class="invalid-icon">🤷‍♂️</div>
+                <div class="invalid-reason">${reason}</div>
+                <div class="invalid-tips">
+                    <p><strong>Link Hunter works best on:</strong></p>
+                    <ul>
+                        <li>🧶 Crochet & Knitting</li>
+                        <li>🪵 Woodworking</li>
+                        <li>🖼️ Arts & Crafts</li>
+                        <li>🖨️ 3D Printing</li>
+                    </ul>
+                    <p style="margin-top: 15px;">
+                        Try clicking specifically on the <strong>object</strong> you want to make.
+                    </p>
+                </div>
             </div>
         `;
     }

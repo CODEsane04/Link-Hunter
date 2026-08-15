@@ -28,7 +28,7 @@ async function getlinks(img_url) {
 
     // backend url - https://link-hunter-backend.onrender.com/api/get-url
 
-    const backendUrl = 'https://link-hunter-backend.onrender.com/api/get-url';
+    const backendUrl = 'http://localhost:8000/get_links';
     console.log("sending image url to the backend : ", img_url);
     
     try {
@@ -40,9 +40,9 @@ async function getlinks(img_url) {
         const response = await fetch(backendUrl, {
             method : 'POST',
             headers : {
-                'content-Type' : 'application/json'
+                'Content-Type' : 'application/json'
             },
-            body : JSON.stringify( {imageUrl : img_url} ),
+            body : JSON.stringify( {image_url: img_url} ),
         });
 
         if (!response.ok) {
@@ -52,9 +52,9 @@ async function getlinks(img_url) {
             console.log("recieved the links from the backend, in response to the POST request", data.tutorials);
 
             //we have to store these links in the chrome local storage
-            chrome.storage.local.set({fetchedLinks : data.tutorials}, () => {
-                console.log("stored the fetched links successfully in the local storage");
-            })
+            chrome.storage.local.set({fetchedData : data}, () => {
+                console.log("stored the fetched data successfully in the local storage");
+            });
         }
         
     } catch (e) {

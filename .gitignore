@@ -1,2 +1,5 @@
 .DS_store/
 node_modules/.env
+.env
+ex_fast_bend/.env
+**/.env

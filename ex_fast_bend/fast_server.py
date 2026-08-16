@@ -392,9 +392,12 @@ def get_image_description(encoded_image_url) :
 
     except Exception as e:
         print("\n===== IMAGE DESCRIPTION ERROR =====")
-        print(type(e))
-        print(e)
-        return None
+        print(f"Error Type: {type(e)}")
+        # We slice the string [:500] so it doesn't print the massive Base64 image and crash the logs!
+        print(f"Error Message: {str(e)[:500]}") 
+        
+        # Raise the error immediately to stop the 10x loop and show us the real problem
+        raise e
 
 def get_search_query(image_description) :
 

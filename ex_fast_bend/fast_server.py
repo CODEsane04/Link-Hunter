@@ -252,8 +252,7 @@ def get_image_description(encoded_image_url) :
 
     model = ChatGoogleGenerativeAI (
         model="gemma-4-31b-it",
-        temperature=0.0,
-        max_retries=0
+        temperature=0.0
     )
 
     if not encoded_image_url :
@@ -401,8 +400,7 @@ def get_search_query(image_description) :
 
     model = ChatGoogleGenerativeAI(
         model="gemma-4-31b-it",
-        temperature=0.1,
-        max_retries=0
+        temperature=0.1
     )
 
     class op_schema2(BaseModel) :

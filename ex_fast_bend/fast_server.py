@@ -277,9 +277,9 @@ def get_image_description(encoded_image_url) :
             default=None, 
             description="Specific details of the object in one line, mention excatly if it resembles to any real-life object, character, animal, human etc. (e.g., a green tortoise keychain with a pink shell)."
         )
-        materials: Optional[List[str]] = Field(
+        materials: Optional[str] = Field(
             default=None, 
-            description="List of primary materials visible in 1 line (e.g., ['wool', 'metal keyring'], ['paper']. ['safety-pins'])."
+            description="Comma-separated list of primary materials visible (e.g., 'wool, metal keyring', 'paper')."
         )
         crafting_process: Optional[str] = Field(
             default=None, 

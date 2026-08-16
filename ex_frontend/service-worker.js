@@ -28,7 +28,7 @@ async function getlinks(img_url) {
 
     // backend url - https://link-hunter-ks1a.onrender.com
 
-    const backendUrl = 'https://link-hunter-ks1a.onrender.com';
+    const backendUrl = 'https://link-hunter-ks1a.onrender.com/get_links';
     console.log("sending image url to the backend : ", img_url);
     
     try {

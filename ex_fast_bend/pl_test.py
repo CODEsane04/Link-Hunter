@@ -10,7 +10,6 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from dotenv import load_dotenv
 from typing import List, Optional
 from langchain_core.messages import SystemMessage, HumanMessage
-from youtubesearchpython import VideosSearch
 from datetime import datetime
 from sentence_transformers import SentenceTransformer, util
 

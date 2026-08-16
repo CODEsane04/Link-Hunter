@@ -546,6 +546,15 @@ class Input_req(BaseModel) :
 
 app = FastAPI()
 
+# Add this CORS configuration right after initializing your app
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins (perfect for Chrome extensions)
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all methods, including POST and OPTIONS
+    allow_headers=["*"],  # Allows all headers
+)
+
 @app.post("/get_links")
 def get_links(request : Input_req) :
     url = request.image_url

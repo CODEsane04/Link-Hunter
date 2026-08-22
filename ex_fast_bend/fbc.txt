@@ -1,0 +1,150 @@
+def get_image_description(encoded_image_url) :
+
+    model = ChatGoogleGenerativeAI (
+        model="gemma-4-31b-it",
+        temperature=0.0
+    )
+
+    if not encoded_image_url :
+        raise HTTPException(
+            status_code=404,
+            detail="the encoded image url is not valid"
+        )
+
+    class op_schema1(BaseModel):
+        is_valid: bool = Field(
+            description="True if the image is a handmade craft or DIY project. False if it is a commercially manufactured object, real car, nature, etc."
+        )
+        rejection_reason: Optional[str] = Field(
+            default=None, 
+            description="If is_valid is false, explain why in one sentence. If true, leave null."
+        )
+        object_category: Optional[str] = Field(
+            default=None, 
+            description="High-level classification (e.g., keychain, greeting card, vase, plushie, purse-charm, bag-charm etc. Identify descriptively)."
+        )
+        detailed_description: Optional[str] = Field(
+            default=None, 
+            description="Specific details of the object in one line, mention excatly if it resembles to any real-life object, character, animal, human etc. (e.g., a green tortoise keychain with a pink shell)."
+        )
+        materials: Optional[str] = Field(
+            default=None, 
+            description="Comma-separated list of primary materials visible (e.g., 'wool, metal keyring', 'paper')."
+        )
+        crafting_process: Optional[str] = Field(
+            default=None, 
+            description="The specific technique used in 1 line (e.g., amigurumi crochet, origami, cross-stitch, resin pouring)."
+        )
+
+    structured_model1 = model.with_structured_output(op_schema1, include_raw=True)
+    system_prompt1 = """
+        [SYSTEM DIRECTIVE: AUTOMATED DATA EXTRACTION MODE - ZERO CONVERSATION]
+
+        You are an automated visual data extraction pipeline. Your sole purpose is to parse image inputs and populate the requested output schema. You are NOT a conversational assistant.
+
+        TASK OBJECTIVES:
+        1. Determine if the image depicts a valid handmade craft / DIY project.
+        2. Extract the high-level object category.
+        3. Extract a 1-line detailed description.
+        4. List visible primary materials.
+        5. Identify the specific crafting technique or process used.
+
+        STRICT OUTPUT GUIDELINES:
+        output must only be given in the following json format. no conversations, no thinking nothing, only follow the following. JSON strucure
+        {
+            "is_valid" : ,
+            "rejection_reason" : ,
+            "object_category" : ,
+            "detailed_description" :  ,
+            "materials" : ,
+            "crafting_process" : 
+        }
+
+        VALIDATION & REJECTION PROTOCOL:
+        - Set `is_valid = true` ONLY if the subject is a verified handmade craft or DIY project.
+        - Set `is_valid = false` if the subject is a mass-produced commercial product, real vehicle, natural landscape, screenshot, or non-DIY object.
+        - If `is_valid = false`, populate `rejection_reason` with a single concise sentence explaining why, and set all other craft attribute fields to null.
+
+        STRICT OPERATIONAL CONSTRAINTS (ZERO-TOLERANCE):
+        - DO NOT output any introductory text, preambles, or conversational greetings (e.g., "Sure", "Here is your JSON", "Based on the image").
+        - DO NOT output any chain-of-thought, reasoning steps, or internal commentary.
+        - DO NOT output any closing remarks, postscripts, or offers for further help.
+        - OUTPUT ONLY raw JSON matching the required schema. Your output MUST begin with '{' and end with '}'.
+    """
+
+    message = [
+        SystemMessage(content=system_prompt1),
+
+        HumanMessage(
+            content = [
+                {
+                    "type" : "image_url",
+                    "image_url" : {
+                        "url" : encoded_image_url
+                    }
+                },
+                {
+                    "type" : "text",
+                    "text" : "Analyze this image and extract the craft information into the requested schema."
+                }
+            ]
+        )
+    ]
+
+    try:
+        # Keep include_raw=True so we can access the raw text if Pydantic fails
+        response = structured_model1.invoke(message)
+
+        # 1. First, check if LangChain successfully parsed it natively
+        if response.get("parsed") is not None:
+            return response["parsed"]
+
+        # 2. FALLBACK: LangChain failed (likely due to CoT chatter and lists)
+        print("\n===== USING FALLBACK REGEX PARSER =====")
+        raw_content = response["raw"].content
+        
+        # Convert the raw content into a single string (flattening lists if necessary)
+        if isinstance(raw_content, list):
+            text_parts = []
+            for part in raw_content:
+                if isinstance(part, dict) and "text" in part:
+                    text_parts.append(part["text"])
+                else:
+                    text_parts.append(str(part))
+            raw_text = "".join(text_parts)
+        else:
+            raw_text = str(raw_content)
+
+        # 3. Surgically extract the JSON block using Regex
+        # This looks for ```json { ... } ``` and extracts just the dictionary
+        match = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', raw_text, re.DOTALL)
+        
+        if match:
+            json_string = match.group(1)
+        else:
+            # If the model forgot the markdown backticks, try to find the outermost brackets
+            match_bare = re.search(r'(\{.*\})', raw_text, re.DOTALL)
+            if match_bare:
+                json_string = match_bare.group(1)
+            else:
+                raise ValueError("Could not locate any JSON structure in the LLM output.")
+
+        # 4. Parse the extracted string and validate it against your schema manually
+        parsed_dict = json.loads(json_string)
+        
+        # Convert the raw dictionary into your Pydantic object
+        final_object = op_schema1(**parsed_dict)
+        
+        print("\n===== IMAGE DESCRIPTION (RECOVERED) =====")
+        print(final_object)
+        
+        return final_object
+
+    except Exception as e:
+        print("\n===== IMAGE DESCRIPTION ERROR =====")
+        print(f"Error Type: {type(e)}")
+        # We slice the string [:500] so it doesn't print the massive Base64 image and crash the logs!
+        print(f"Error Message: {str(e)[:500]}") 
+        
+        # Raise the error immediately to stop the 10x loop and show us the real problem
+        raise e

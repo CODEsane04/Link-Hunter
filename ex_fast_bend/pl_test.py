@@ -6,16 +6,20 @@ import os
 import re
 import base64
 import requests
-from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
 from dotenv import load_dotenv
 from typing import List, Optional
 from langchain_core.messages import SystemMessage, HumanMessage
 from datetime import datetime
-from sentence_transformers import SentenceTransformer, util
+import numpy as np
 
 # Load environment variables
 load_dotenv()
-embedder = SentenceTransformer('all-MiniLM-L6-v2')
+embedder = GoogleGenerativeAIEmbeddings(
+    model="gemini-embedding-001",
+    output_dimensionality=768
+
+)
 
 #schema of the in coming body
 class Input_req(BaseModel) :
@@ -154,7 +158,7 @@ def format_duration(duration_str: str) -> str:
     
 YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY")
 
-def fetch_youtube_api_v3(query: str, max_results: int = 30) -> list:
+def fetch_youtube_api_v3(query: str, max_results: int = 20) -> list:
     if not YOUTUBE_API_KEY:
         raise ValueError("YouTube API key is missing.")
 
@@ -287,7 +291,7 @@ def get_image_description(encoded_image_url) :
             description="The specific technique used in 1 line (e.g., amigurumi crochet, origami, cross-stitch, resin pouring)."
         )
 
-    structured_model1 = model.with_structured_output(op_schema1, include_raw=True)
+    structured_model1 = model.with_structured_output(schema=op_schema1.model_json_schema(),method="json_schema", include_raw=True)
     system_prompt1 = """
 [SYSTEM DIRECTIVE: AUTOMATED DATA EXTRACTION MODE - ZERO CONVERSATION]
 
@@ -412,17 +416,17 @@ def get_search_query(image_description) :
     class op_schema2(BaseModel) :
         search_query : str = Field(description="use the image description based on different fields & generate the youtube search query")
 
-    structured__model2 = model.with_structured_output(op_schema2, include_raw=True)
+    structured__model2 = model.with_structured_output(schema=op_schema2.model_json_schema(),method="json_schema", include_raw=True)
 
     system_prompt2 = f"""[SYSTEM DIRECTIVE: AUTOMATED SEARCH QUERY GENERATOR - ZERO CONVERSATION]
 
 You are a specialized search query optimization engine for YouTube DIY and craft tutorials. Your sole purpose is to convert extracted craft metadata into a high-intent, highly accurate YouTube search string. You are NOT a conversational assistant.
 
 INPUT CRAFT METADATA:
-- Category: {image_description.object_category}
-- Detailed Description: {image_description.detailed_description}
-- Materials: {image_description.materials}
-- Crafting Technique: {image_description.crafting_process}
+- Category: {image_description["object_category"]}
+- Detailed Description: {image_description["detailed_description"]}
+- Materials: {image_description["materials"]}
+- Crafting Technique: {image_description["crafting_process"]}
 
 QUERY CONSTRUCTION RULES:
 1. KEYWORD PRIORITY METHOD: Combine [Crafting Technique] + [Specific Object/Design] + [Primary Material (if relevant)] + ["tutorial" or "DIY"].
@@ -505,6 +509,18 @@ STRICT OPERATIONAL CONSTRAINTS (ZERO-TOLERANCE):
         )
 
 
+def cosine_similarity(v1, v2) -> float:
+    v1 = np.asarray(v1, dtype=np.float32)
+    v2 = np.asarray(v2, dtype=np.float32)
+
+    norm1 = np.linalg.norm(v1)
+    norm2 = np.linalg.norm(v2)
+
+    if norm1 == 0 or norm2 == 0:
+        return 0.0
+
+    return float(np.dot(v1, v2) / (norm1 * norm2))
+
 def semantic_filtering(tutorial_list, search_query) :
 
     if len(tutorial_list) == 0 :
@@ -520,11 +536,11 @@ def semantic_filtering(tutorial_list, search_query) :
 
     try :
 
-        query_embedding = embedder.encode(search_query, convert_to_tensor=True)
+        query_embedding = embedder.embed_query(search_query)
         for video_items in tutorial_list :
             cleaned_title = clean_title_for_embedding(video_items["title"])
-            title_embedding = embedder.encode(cleaned_title, convert_to_tensor=True)
-            cosine_score = util.cos_sim(query_embedding, title_embedding).item()
+            title_embedding = embedder.embed_query(cleaned_title)
+            cosine_score = cosine_similarity(query_embedding, title_embedding)
             video_items["cosine_score"] = cosine_score
 
         filtered_tutorials = [
@@ -544,7 +560,7 @@ def semantic_filtering(tutorial_list, search_query) :
         )
 if __name__ == "__main__":
 
-    image_url = "https://i.pinimg.com/736x/20/c0/76/20c07602d390e974a8c3b3666f6a5359.jpg"
+    image_url = "https://i.pinimg.com/736x/36/cd/c8/36cdc8fd36d9aff5e3f400f5a7a6300c.jpg"
 
     print("\n==============================")
     print("STEP 1 : Encoding Image")
@@ -605,7 +621,7 @@ if __name__ == "__main__":
     print(f"search query generated in {tries} tries")
 
     print("\nSEARCH QUERY:")
-    print(search_query.search_query)
+    print(search_query["search_query"])
 
     print("\n==============================")
     print("STEP 4 : Searching YouTube")
@@ -616,13 +632,13 @@ if __name__ == "__main__":
     # )
 
     results = fetch_youtube_api_v3(
-    search_query.search_query,
-    50
+    search_query["search_query"],
+    20
 )
 
 print(f"\nFound {len(results)} videos\n")
 
-ft = semantic_filtering(results,search_query.search_query)
+ft = semantic_filtering(results,search_query["search_query"])
 
 if len(ft) > 15:
     ft = sorted(

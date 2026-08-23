@@ -9,13 +9,25 @@ Instead of guessing keywords, Link Hunter uses a Vision-Language Model to analyz
 
 To use Link Hunter on your own machine, follow these simple steps:
 
-1. **[Download the extension.zip file here](https://github.com/CODEsane04/Link-Hunter/raw/main/extension.zip)** and unzip it.
-2. **Open Chrome** and navigate to `chrome://extensions` in your address bar.
-3. **Enable "Developer mode"** (toggle in the top right corner).
-4. Click **"Load unpacked"** in the top left menu.
-5. **Select the unzipped folder** from step 1.
+**[Click here to download the extension from Chrome Web Store](https://chromewebstore.google.com/detail/emjpipchlpflbhncabcnncoojceahbai?utm_source=item-share-cb)**
 
 You're all set! Right-click any DIY image on the web and select "Search with LH" to see the magic happen.
+
+## 📊 Performance & Observability
+
+All backend traces and multi-stage LLM pipelines are monitored using **LangSmith**.
+
+| Metric | Measured Value | Description / Scope |
+| :--- | :--- | :--- |
+| **P50 Latency** | `~4.903s` | Median end-to-end trace latency across both LLM stages |
+| **P99 Latency** | `~7.924s` | Worst-case tail latency (complex prompts / cold starts) |
+| **Error Rate** | `< 0.1%` | Production trace execution failure rate |
+| **Avg. Output Tokens** | `~55 tokens` | Average response size per Trace |
+| **Pipeline Stages** | `2 LLM Calls` | Stage 1: Visual data extraction → Stage 2: Search query curation |
+
+> **Note:** Metrics reflect production telemetry captured across live requests.
+
+
 
 ## 🧠 Technical Architecture & Features
 
@@ -29,9 +41,7 @@ Link Hunter operates on a streamlined, AI-first pipeline, bridging a lightweight
     
 * **Bulletproof Structured Extraction:** The AI pipeline enforces strict Pydantic schemas to guarantee predictable JSON outputs. To ensure zero downtime from LLM hallucinations or conversational "chatter," the system features a custom, multi-layered regex fallback parser that surgically extracts nested JSON arrays and objects, ensuring the pipeline never crashes during data transfer.
   
-* **Semantic Re-Ranking Engine:** To solve YouTube's issue of broad or irrelevant keyword matching, Link Hunter implements a custom NLP re-ranking step. It generates vector embeddings of the retrieved video titles using a SentenceTransformer (`all-MiniLM-L6-v2`) and calculates the Cosine Similarity against the generated search query. Videos falling below the strict semantic threshold are instantly purged from the results.
-  
-* **Algorithmic Freshness Decay:** Because standard YouTube search heavily favors older videos with accumulated lifetime views, Link Hunter applies a custom mathematical decay function (`Score = Views / 1.2^Years`) that penalizes outdated content, ensuring the final filtered results offer an optimal balance of high historical popularity and modern relevance.
+* **Semantic Re-Ranking Engine:** To solve YouTube's issue of broad or irrelevant keyword matching, Link Hunter implements a custom semantic re-ranking step. It generates dense vector embeddings of retrieved video titles using Google’s Gemini embedding model (`models/embedding-001` via `GoogleGenerativeAIEmbeddings`) and computes the Cosine Similarity against the target query vector. Videos failing to meet the strict semantic threshold are pruned from the final recommendations.
 
 ## Features & Specifications
 

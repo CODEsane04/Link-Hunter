@@ -1,8 +1,8 @@
 {
     "manifest_version": 3,
-    "name": "visual Product Search",
+    "name": "Link Hunter",
     "version": "1.0",
-    "description": "visual Product Search",
+    "description": "AI-first chrome extenssion, to get you tutorial video links based on your images",
     "permissions": [
         "activeTab",
         "contextMenus",

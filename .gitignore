@@ -3,3 +3,5 @@ node_modules/.env
 .env
 ex_fast_bend/.env
 **/.env
+.DS_Store
+.vscode/

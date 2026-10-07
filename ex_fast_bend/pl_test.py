@@ -423,10 +423,10 @@ def get_search_query(image_description) :
 You are a specialized search query optimization engine for YouTube DIY and craft tutorials. Your sole purpose is to convert extracted craft metadata into a high-intent, highly accurate YouTube search string. You are NOT a conversational assistant.
 
 INPUT CRAFT METADATA:
-- Category: {image_description["object_category"]}
-- Detailed Description: {image_description["detailed_description"]}
-- Materials: {image_description["materials"]}
-- Crafting Technique: {image_description["crafting_process"]}
+- Category: {image_description.get("object_category") or ""}
+- Detailed Description: {image_description.get("detailed_description") or ""}
+- Materials: {image_description.get("materials") or ""}
+- Crafting Technique: {image_description.get("crafting_process") or ""}
 
 QUERY CONSTRUCTION RULES:
 1. KEYWORD PRIORITY METHOD: Combine [Crafting Technique] + [Specific Object/Design] + [Primary Material (if relevant)] + ["tutorial" or "DIY"].
@@ -537,11 +537,15 @@ def semantic_filtering(tutorial_list, search_query) :
     try :
 
         query_embedding = embedder.embed_query(search_query)
-        for video_items in tutorial_list :
-            cleaned_title = clean_title_for_embedding(video_items["title"])
-            title_embedding = embedder.embed_query(cleaned_title)
+
+        # Batch embed all titles in a single API call
+        cleaned_titles = [clean_title_for_embedding(video["title"]) for video in tutorial_list]
+        title_embeddings = embedder.embed_documents(cleaned_titles)
+
+        # Compute cosine similarity for each video
+        for video_item, title_embedding in zip(tutorial_list, title_embeddings):
             cosine_score = cosine_similarity(query_embedding, title_embedding)
-            video_items["cosine_score"] = cosine_score
+            video_item["cosine_score"] = cosine_score
 
         filtered_tutorials = [
             video_item

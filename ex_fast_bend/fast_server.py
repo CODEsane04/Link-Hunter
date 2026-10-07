@@ -16,9 +16,10 @@ import re
 import numpy as np
 
 
-
 # Load environment variables
 load_dotenv()
+
+from langsmith import traceable
 
 
 YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY")
@@ -255,8 +256,8 @@ def clean_title_for_embedding(title: str) -> str:
 def get_image_description(encoded_image_url) :
 
     model = ChatGoogleGenerativeAI (
-        model="gemma-4-31b-it",
-        temperature=0.0
+        model="gemma-4-26b-a4b-it",
+        temperature=0.0,
     )
 
     if not encoded_image_url :
@@ -406,8 +407,10 @@ def get_image_description(encoded_image_url) :
 def get_search_query(image_description) :
 
     model = ChatGoogleGenerativeAI(
-        model="gemma-4-31b-it",
-        temperature=0.1
+        model="gemma-4-26b-a4b-it",
+        # Disable the hidden reasoning channel to prevent the 80s latency spikes
+        temperature=0.0,
+        response_mime_type="application/json"
     )
 
     class op_schema2(BaseModel) :
@@ -420,10 +423,10 @@ def get_search_query(image_description) :
         You are a specialized search query optimization engine for YouTube DIY and craft tutorials. 
 
         INPUT CRAFT METADATA:
-        - Category: {image_description["object_category"]}
-        - Detailed Description: {image_description["detailed_description"]}
-        - Materials: {image_description["materials"]}
-        - Crafting Technique: {image_description["crafting_process"]}
+        - Category: {image_description.get("object_category") or ""}
+        - Detailed Description: {image_description.get("detailed_description") or ""}
+        - Materials: {image_description.get("materials") or ""}
+        - Crafting Technique: {image_description.get("crafting_process") or ""}
         QUERY CONSTRUCTION RULES:
         1. SUBJECT-FIRST FOCUS: Identify the exact, specific object, shape, or character being made.
         2. HUMAN-LIKE INTENT: Formulate the query exactly how a human crafter would type it. You are encouraged to use natural phrasing like "how to make a" or "DIY tutorial for".
@@ -523,6 +526,7 @@ def cosine_similarity(v1, v2) -> float:
 
     return float(np.dot(v1, v2) / (norm1 * norm2))
 
+@traceable(name="semantic_filtering")
 def semantic_filtering(tutorial_list, search_query) :
 
     if len(tutorial_list) == 0 :
@@ -539,11 +543,15 @@ def semantic_filtering(tutorial_list, search_query) :
     try :
 
         query_embedding = embedder.embed_query(search_query)
-        for video_items in tutorial_list :
-            cleaned_title = clean_title_for_embedding(video_items["title"])
-            title_embedding = embedder.embed_query(cleaned_title)
+
+        # Batch embed all titles in a single API call
+        cleaned_titles = [clean_title_for_embedding(video["title"]) for video in tutorial_list]
+        title_embeddings = embedder.embed_documents(cleaned_titles)
+
+        # Compute cosine similarity for each video
+        for video_item, title_embedding in zip(tutorial_list, title_embeddings):
             cosine_score = cosine_similarity(query_embedding, title_embedding)
-            video_items["cosine_score"] = cosine_score
+            video_item["cosine_score"] = cosine_score
 
         filtered_tutorials = [
             video_item
@@ -575,6 +583,7 @@ app.add_middleware(
 )
 
 @app.post("/get_links")
+@traceable(name="full_pipeline_trace")
 def get_links(request : Input_req) :
     url = request.image_url
 

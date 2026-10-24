@@ -1,0 +1,17 @@
+#base image
+FROM python:3.12-slim
+
+#working directory
+WORKDIR /app
+
+# 1. Copy only requirements first & install
+COPY requirements.txt /app
+RUN pip install --no-cache-dir -r requirements.txt
+# 2. Then copy your application code
+COPY . /app
+
+#expose the port
+EXPOSE 8000
+
+#actual run command
+CMD ["uvicorn", "fast_server:app", "--host", "0.0.0.0", "--port", "8000"]

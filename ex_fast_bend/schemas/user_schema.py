@@ -31,3 +31,10 @@ class Token(BaseModel) :
 # Schema for data stored inside the JWT token payload
 class TokenData(BaseModel) :
     email : Optional[str] = None
+
+#schem to store user info in the mongoDB
+class UserInDB(BaseModel):
+    id: Optional[str] = None
+    email: EmailStr
+    hashed_password: str
+    created_at: datetime = Field(default_factory=datetime.utcnow)

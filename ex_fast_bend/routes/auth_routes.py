@@ -20,8 +20,8 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 @router.post("/signup", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 async def signup(user_data : UserCreate) :
-    user_email = user_data["email"]
-    user_pass = user_data["password"]
+    user_email = user_data.email
+    user_pass = user_data.password
 
     #1. check if the user id already present in mogodb
     existing_user = await users_collection.find_one({"email" : user_email})
@@ -61,12 +61,12 @@ async def signup(user_data : UserCreate) :
 async def login(credentials : UserLogin) :
 
     #find the user
-    user = await users_collection.find_one({"email" : credentials["email"]})
+    user = await users_collection.find_one({"email" : credentials.email})
 
     #2 if the user does not exist, or the pass word does not match, return 401
     # (Security tip: Never reveal whether it was the email or password that was wrong)
 
-    if not user or not verify_password(credentials["password"], user["hashed_password"]) :
+    if not user or not verify_password(credentials.password, user["hashed_password"]) :
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="invalid email or password",

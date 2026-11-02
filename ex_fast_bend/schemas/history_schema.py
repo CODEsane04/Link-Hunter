@@ -18,7 +18,7 @@ class TutorialItem(BaseModel):
     cosine_score: float
 
 class store_history_schema(BaseModel):
-    user_email: str
+    email: str
     image_url: str
     search_query: str
     total_results: int

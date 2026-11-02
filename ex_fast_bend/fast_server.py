@@ -16,7 +16,9 @@ from datetime import datetime, timezone
 import re
 import numpy as np
 
+#import routers
 from routes.auth_routes import router as auth_router
+from routes.history_routes import router as history_routes
 #mount the auth router = remaining
 
 from database import history_collection
@@ -590,9 +592,10 @@ app.add_middleware(
 )
 
 #=================================
-#      MOUNT THE AUTH ROUTER
+#      MOUNT THE ROUTERS
 #=================================
 app.include_router(auth_router)
+app.include_router(history_routes)
 
 @app.post("/get_links")
 @traceable(name="full_pipeline_trace")
@@ -741,7 +744,7 @@ async def get_links(request : Input_req, current_user : dict = Depends(get_curre
 
     #save the filtered tutorials in the db first & then return the results
     history_record = {
-            "user_email" : current_user["email"],
+            "email" : current_user["email"],
             "image_url" : url,
             "search_query" : generated_sq_object["search_query"],
             "total_results" : len(semantically_filtered_tutorial),

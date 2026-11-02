@@ -61,14 +61,14 @@ def create_access_token(user_data : dict, expires_delta: Optional[timedelta] = N
 
     return encoded_jwt_token
 
-def decode_access_token(access_token : str) -> Optional[dict] :
+def decode_access_token(access_token : str, secret_key : str) -> Optional[dict] :
     """
     Decodes and verifies a JWT token.
     Returns the payload dictionary if valid, or None if expired/tampered with.
     """
 
     try : 
-        payload = jwt.decode(access_token, SECRET_KEY, algorithms=ALGORITHM)
+        payload = jwt.decode(access_token, secret_key, algorithms=[ALGORITHM])
         return payload
     except jwt.PyJWTError :
         # Token is either expired (ExpiredSignatureError) or invalid (InvalidTokenError)

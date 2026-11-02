@@ -17,8 +17,10 @@ client = AsyncIOMotorClient(MONGODB_URL)
 #get the db reference
 db = client[DATABASE_NAME]
 
-# get the collection reference for users
+# define the collections
+
 users_collection = db["users"]
+history_collection = db["search_history"]
 
 async def test_connection():
     try : 

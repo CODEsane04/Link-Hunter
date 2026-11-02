@@ -1,4 +1,5 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends
+from utils.deps import get_current_user
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 import sys
@@ -11,9 +12,15 @@ from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmb
 from dotenv import load_dotenv
 from typing import List, Optional
 from langchain_core.messages import SystemMessage, HumanMessage
-from datetime import datetime
+from datetime import datetime, timezone
 import re
 import numpy as np
+
+from routes.auth_routes import router as auth_router
+#mount the auth router = remaining
+
+from database import history_collection
+from schemas.history_schema import store_history_schema
 
 
 # Load environment variables
@@ -582,9 +589,19 @@ app.add_middleware(
     allow_headers=["*"],  # Allows all headers
 )
 
+#=================================
+#      MOUNT THE AUTH ROUTER
+#=================================
+app.include_router(auth_router)
+
 @app.post("/get_links")
 @traceable(name="full_pipeline_trace")
-def get_links(request : Input_req) :
+async def get_links(request : Input_req, current_user : dict = Depends(get_current_user)) :
+
+    # Now you can use the user downstream:
+    print(f"Request made by: {current_user['email']}")
+
+    #get the url from the request body
     url = request.image_url
 
     if not url :
@@ -722,8 +739,24 @@ def get_links(request : Input_req) :
             reverse=True
         )[:15]
 
-    #return filtered_tutorials
+    #save the filtered tutorials in the db first & then return the results
+    history_record = {
+            "user_email" : current_user["email"],
+            "image_url" : url,
+            "search_query" : generated_sq_object["search_query"],
+            "total_results" : len(semantically_filtered_tutorial),
+            "final_list" : semantically_filtered_tutorial,
+            "created_at" : datetime.now(timezone.utc)
+        }
+    
+    try :
+        await history_collection.insert_one(history_record)
+    except Exception as e :
+        print(f"failed to save data in DB {e}")
+        #used a print statement here, because we still want the user to get the links, instead of breaking the application
 
+
+    #return filtered_tutorials
     return {
 
         "is_valid" : True,

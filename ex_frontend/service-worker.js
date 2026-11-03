@@ -4,65 +4,81 @@ function setupContextMenu() {
         title: "Search with LH",
         contexts: ["image"]
     });
-};
+}
 
 chrome.runtime.onInstalled.addListener(() => {
     setupContextMenu();
 });
 
-chrome.contextMenus.onClicked.addListener(async (info, tab) => {
-    if (info.menuItemId === "searchWithLH") {
-
-        console.log("Image right-clicked. URL : ", info.srcUrl);
-
-        //storing the img url in the chrome storage as a key value pair
-        const img_url = info.srcUrl;
-        /*chrome.storage.local.set({capturedImageUrl: img_url}, () => {
-            console.log("image url stored succesfully in chrome storage");
-        });*/
-        await getlinks(img_url);
+// 1. Listen for external messages from the React web app (http://localhost:3000)
+chrome.runtime.onMessageExternal.addListener((request, sender, sendResponse) => {
+    if (request.action === "SAVE_AUTH_TOKEN" && request.token) {
+        chrome.storage.local.set({ 
+            authToken: request.token,
+            userEmail: request.email || null 
+        }, () => {
+            console.log(" Auth token synced successfully from React web app!");
+            sendResponse({ success: true, message: "Token stored in extension" });
+        });
+        return true; // Keep message channel open for async response
     }
 });
 
-async function getlinks(img_url) {
+// 2. Handle context menu right-click on craft images
+chrome.contextMenus.onClicked.addListener(async (info, tab) => {
+    if (info.menuItemId === "searchWithLH") {
+        console.log("Image right-clicked. URL: ", info.srcUrl);
+        const img_url = info.srcUrl;
 
-    // backend url - https://link-hunter-1.onrender.com/get_links
-    //local url - http://localhost:8000/get_links
+        // Check if an auth token exists in extension storage
+        const { authToken } = await chrome.storage.local.get("authToken");
 
+        if (!authToken) {
+            console.log("⚠️ No auth token found! Redirecting to React login page...");
+            chrome.tabs.create({ url: "http://localhost:3000" });
+            return;
+        }
+
+        // Authenticated -> proceed with backend request
+        await getlinks(img_url, authToken);
+    }
+});
+
+// 3. Dispatch POST /get_links with Bearer token
+async function getlinks(img_url, authToken) {
     const backendUrl = 'http://localhost:8000/get_links';
-    console.log("sending image url to the backend : ", img_url);
+    console.log("Sending image URL with Bearer token to backend: ", img_url);
     
     try {
-        
-        //response is a Response Object, you need to unpack this object
-        //which is done by response.json() it unpacks & parses
-
-        //we send a POST request to the backend with the image url in the body
         const response = await fetch(backendUrl, {
-            method : 'POST',
-            headers : {
-                'Content-Type' : 'application/json'
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
             },
-            body : JSON.stringify( {image_url: img_url} ),
+            body: JSON.stringify({ image_url: img_url }),
         });
 
+        // If the token is expired or unauthorized (401), clear and prompt login
+        if (response.status === 401) {
+            console.error("401 Unauthorized! Token expired or invalid. Clearing and opening login...");
+            await chrome.storage.local.remove(["authToken", "userEmail"]);
+            chrome.tabs.create({ url: "http://localhost:3000" });
+            return;
+        }
+
         if (!response.ok) {
-            console.error(`HTTP error status : ${response.status}`); 
+            console.error(`HTTP error status: ${response.status}`);
         } else {
             const data = await response.json();
-            console.log("recieved the links from the backend, in response to the POST request", data.tutorials);
+            console.log("Received links from backend:", data);
 
-            //we have to store these links in the chrome local storage
-            chrome.storage.local.set({fetchedData : data}, () => {
-                console.log("stored the fetched data successfully in the local storage");
+            // Store results in chrome local storage for popup display
+            chrome.storage.local.set({ fetchedData: data }, () => {
+                console.log("Stored fetched data successfully in local storage");
             });
         }
-        
     } catch (e) {
-        console.log("failed to fetch links : ", e);
+        console.log("Failed to fetch links: ", e);
     }
-    
 }
-
-
-
